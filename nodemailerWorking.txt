@@ -1,0 +1,119 @@
+Step 1: Install Nodemailer
+npm install nodemailer
+Step 2: Create a Gmail App Password
+
+Google Account → Security → 2-Step Verification → App Passwords
+
+You'll get something like:
+
+abcd efgh ijkl mnop
+
+Keep it safe.
+
+Step 3: Add Environment Variables
+
+.env
+
+EMAIL=yourgmail@gmail.com
+EMAIL_PASSWORD=your_app_password
+
+Example:
+
+EMAIL=nabeel4656@gmail.com
+EMAIL_PASSWORD=abcd efgh ijkl mnop
+
+Never push this to GitHub.
+
+Step 4: Create a Mail Utility
+
+Create:
+
+src/
+ └── utils/
+      └── sendMail.js
+const nodemailer = require("nodemailer")
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD
+    }
+})
+
+async function sendMail(to, subject, html) {
+    await transporter.sendMail({
+        from: process.env.EMAIL,
+        to,
+        subject,
+        html
+    })
+}
+
+module.exports = sendMail
+Step 5: Import It
+
+In your controller:
+
+const sendMail = require("../utils/sendMail")
+Step 6: Decide When to Send Email
+
+Examples:
+
+User Registration
+User registers
+      ↓
+Send welcome email
+Forgot Password
+User clicks forgot password
+      ↓
+Send reset link
+OTP Verification
+User enters email
+      ↓
+Send OTP
+Payment Success
+User pays ₹99
+      ↓
+Send receipt
+Step 7: Call the Function
+
+After creating user:
+
+await sendMail(
+    user.email,
+    "Welcome to Backend Ledger",
+    `
+      <h1>Hello ${user.name}</h1>
+      <p>Your account was created successfully.</p>
+    `
+)
+Step 8: Test
+
+Run:
+
+npm run dev
+
+Register a user.
+
+Check inbox.
+
+Check spam folder too.
+
+Real Project Flow
+
+For your current project:
+
+POST /register
+      ↓
+Route
+      ↓
+Controller
+      ↓
+Save User in MongoDB
+      ↓
+Generate JWT
+      ↓
+Send Welcome Email
+      ↓
+Return Response

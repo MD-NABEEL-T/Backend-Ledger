@@ -1,0 +1,43 @@
+David goggins
+https://youtube.com/shorts/bq0ou4a8GBA?si=Mx3D6cHkC8E8ot9-
+1️⃣ Watch normally till *02:09:02*
+2️⃣ Then jump to *02:46:44 – Creating Transaction API*
+3️⃣ Complete that section
+4️⃣ Come back to *02:09:02 – Transaction Controller* and continue
+
+dont focus on other things fucking focus on implementing this and then rest is history ok fucking dont care about others just move forward ok
+
+we are using require that is commonjs because it is old so as a backend dev you will face this also 
+package.json file added nodemon in dev , start as node server.js
+mongodb atlas
+
+to connect express to mongodb we use mongoose
+put url in .env
+then create db.js and connect to mongodb using env erl
+then require dotenv config in server.js
+
+export toDB() and import in server.js
+
+create models/user.model.js
+search email regex for input validation to addin 
+install bcryptjs package for hashing the password
+
+userSchema.pre runs before everything (Middleware)
+userSchema.methods.compareMethods to check / validation
+created userModel
+
+npm i jsonwebtoken
+
+//  app.js file is used to create server and manage configs
+
+
+enable login and then create workspace and run register,login and cookies will be created .
+and stored in db 
+
+enable mailing using cloud
+
+add email.service.js to access third party services that is mailconcept
+
+email is sent using postman api
+
+used uui generator website for idempotency key
