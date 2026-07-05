@@ -3,7 +3,7 @@ const mongoose = require("mongoose")
 const ledgerSchema = new mongoose.Schema({
     account:{
         type:mongoose.Schema.Types.ObjectId,
-        ref: "account",
+        ref: "Account",
         required:[true, "Ledger must be associated with an account"],
         index:true,
         immutable:true
@@ -15,7 +15,7 @@ const ledgerSchema = new mongoose.Schema({
     },
     transaction:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"transaction",
+        ref:"Transaction",
         required:[true,"ledger must be associated with a transaction"],
         index:true,
         immutable:true

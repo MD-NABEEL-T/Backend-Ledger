@@ -74,7 +74,7 @@ async function createTransaction(req, res) {
                 message: "Transaction was reversed ,please retry"
             })
         }
-    } 
+    }
 
     // 3,check account status 
 
@@ -94,49 +94,48 @@ async function createTransaction(req, res) {
     }
 
     // 5, Create transaction (PENDING)
-let transaction;
-try{
+    let transaction;
     const session = await mongoose.startSession()
-    session.startTransaction()
+    try {
+        const session = await mongoose.startSession()
+        session.startTransaction()
 
-    transaction = new transactionModel({
-        fromAccount,
-        toAccount,
-        amount,
-        idempotencyKey,
-        status: "PENDING"
-    })
-
-    const debitLedgerEntry = await ledgerModel.create([{
-        account: fromAccount,
-        amount: amount,
-        transaction: transaction._id,
-        type: "DEBIT"
-    }], { session })
-
-    await (()=>{
-        return new Promise((resolve) =>{
-            setTimeout(()=>{
-                resolve()
-            }   , 10000)
+        transaction = new transactionModel({
+            fromAccount,
+            toAccount,
+            amount,
+            idempotencyKey,
+            status: "PENDING"
         })
-    })()
+        await transaction.save({ session })
 
-    const creditLedgerEntry = await ledgerModel.create([{
-        account: toAccount,
-        amount: amount,
-        transaction: transaction._id,
-        type: "CREDIT"
-    }], { session })
+        const debitLedgerEntry = await ledgerModel.create([{
+            account: fromAccount,
+            amount: amount,
+            transaction: transaction._id,
+            type: "DEBIT"
+        }], { session })
 
-    await transactionModel.findOneandUpdate({ _id: transaction._id }, { status: "COMPLETED" }, { session })
+        const creditLedgerEntry = await ledgerModel.create([{
+            account: toAccount,
+            amount: amount,
+            transaction: transaction._id,
+            type: "CREDIT"
+        }], { session })
 
-    await session.commitTransaction()
-    session.endSession()
-}
-catch(error){
-    console.error("Error occurred while processing transaction:", error)
-}
+        await transactionModel.findOneAndUpdate({ _id: transaction._id }, { status: "COMPLETED" }, { session })
+
+        await session.commitTransaction()
+        session.endSession()
+    }
+    catch (error) {
+        console.error("Error occurred while processing transaction:", error)
+        await session.abortTransaction()
+        session.endSession()
+        return res.status(500).json({
+            message: "Transaction failed, please retry"
+        })
+    }
     // 10. send email notification
 
     await emailService.sendTransactionEmail(req.user.email, req.user.name, amount, toAccount)
@@ -167,10 +166,10 @@ async function createInitialFundsTransaction(req, res) {
     }
 
     const fromUserAccount = await accountModel.findOne({
-        user:req.user._id
+        user: req.user._id
     })
 
-    if(!fromUserAccount){
+    if (!fromUserAccount) {
         return res.status(400).json({
             message: "System user account not found"
         })
@@ -187,21 +186,21 @@ async function createInitialFundsTransaction(req, res) {
         status: "PENDING"
     })
 
-    await transaction.save({ session })  
+    await transaction.save({ session })
 
     const debitLedgerEntry = await ledgerModel.create([{
         account: fromUserAccount._id,
         amount: amount,
         transaction: transaction._id,
         type: "DEBIT"
-    }],{ session })
+    }], { session })
 
-        const creditLedgerEntry = await ledgerModel.create([{
+    const creditLedgerEntry = await ledgerModel.create([{
         account: fromUserAccount._id,
         amount: amount,
         transaction: transaction._id,
         type: "CREDIT"
-    }],{ session })
+    }], { session })
 
     transaction.status = "COMPLETED"
     await transaction.save({ session })
