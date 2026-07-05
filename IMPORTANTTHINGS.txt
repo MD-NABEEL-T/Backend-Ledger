@@ -1,0 +1,30 @@
+MVC (Model-View-Controller) / Router Architecture.
+The Complete Flow Visualised
+Client Request ──> server.js (Listens) ──> app.js (App Setup) ──> routes/ ──> middleware/ ──> controller/ ──> model/ ──> Database
+
+app.js imports only the root files from the routes/ folder.
+The routes files import the middleware and controllers.
+The controllers import the models to talk to the database.
+
+whyuseapp.use(express.json())
+app.use(express.json()) is a built-in middleware function in Express that automatically parses incoming requests with JSON payloads and populates them into the req.body object.
+
+
+Ledger is used to check the balance of the account. It is a collection of all the transactions that have occurred in the account. Each transaction is recorded in the ledger with a debit or credit entry.
+📒 Notes: Ledger scaling trade-off
+Pure ledger (current code): balance = scan + sum all entries every time
+
+✅ Always accurate, fully auditable
+❌ Gets slower as transaction count grows (thousands/millions of entries)
+Real-world fix: hybrid approach
+
+
+
+
+
+Why JWT token + cookie?
+The core problem: HTTP is stateless — meaning the server has zero memory between requests. Every request you send is treated like a total stranger walked in, even if you logged in 2 seconds ago. So the server needs some way to know "hey, this is the same person who logged in" on every subsequent request (like "create account" or "check balance").
+
+Server stores a "session" in its own database/memory, gives the browser a random session ID, browser sends that ID back each time, server looks it up in its storage. Works, but means the server has to store + manage millions of sessions.
+
+The JWT way (what you're using): Instead of the server storing anything, it creates a signed token — literally your userId ({ userId: user._id }) encrypted/signed with a secret key (process.env.JWT_SECRET) that only your server knows. This token is handed to the browser. The server stores nothing.

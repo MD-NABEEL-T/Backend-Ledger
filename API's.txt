@@ -1,0 +1,64 @@
+## The 3 layers in every feature (e.g. "register")
+
+1. **Route** (`auth.routes.js`) — defines the URL + HTTP method, points to a controller function
+2. **Middleware** (`auth.middleware.js`) — runs *before* the controller, checks things like "is this user logged in?" (adds `req.user` if valid)
+3. **Controller** (`auth.controller.js`) — the actual logic: talks to the DB via Models, sends the response
+
+## What each API does (high level)
+
+| Method | Route | Auth needed? | What it does |
+|---|---|---|---|
+| POST | `/api/auth/register` | No | Creates user, hashes password, sends welcome email, returns JWT token |
+| POST | `/api/auth/login` | No | Verifies password, returns JWT token |
+| POST | `/api/auth/logout` | No* | Blacklists the current token so it can't be reused |
+| POST | `/api/accounts/` | Yes | Creates a new account (wallet) for the logged-in user |
+| GET | `/api/accounts/` | Yes | Lists all accounts belonging to the logged-in user |
+| GET | `/api/accounts/:accountId/balance` | Yes | Computes balance for one account |
+| POST | `/api/transactions/system/initial-funds` | Yes (system user only) | Special: injects starting money into an account (like a bank "opening deposit") |
+| POST | `/api/transactions/` | Yes | Transfers money from one account to another |
+
+*logout technically doesn't check auth first, just reads whatever token is in the cookie/header.
+
+## Why "system/initial-funds" exists
+
+Notice `createTransaction` (normal transfer) requires the sender to have enough balance — but every account starts at 0. So how does *any* money ever enter the system? That's what `createInitialFundsTransaction` is for — a special "system user" account can inject funds into someone's account without needing a balance itself (it debits itself and credits itself equally, in `createInitialFundsTransaction` — look closely, `fromUserAccount._id` is used for both debit AND credit, which is odd but effectively means the system account's balance stays net-zero while pushing funds to the real account... actually wait, let me flag this).Good catch on myself here, bro — I need to flag a **9th bug** I missed earlier. Let me show you.
+
+## Bug #9: `createInitialFundsTransaction` — money never actually reaches the target account
+
+**File:** `transaction.controller.js`, inside `createInitialFundsTransaction`
+
+**Current code:**
+```javascript
+const debitLedgerEntry = await ledgerModel.create([{
+    account: fromUserAccount._id,
+    amount: amount,
+    transaction: transaction._id,
+    type: "DEBIT"
+}],{ session })
+
+const creditLedgerEntry = await ledgerModel.create([{
+    account: fromUserAccount._id,   // ⚠️ should be toAccount, not fromUserAccount._id
+    amount: amount,
+    transaction: transaction._id,
+    type: "CREDIT"
+}],{ session })
+```
+
+**Fix — replace with:**
+```javascript
+const debitLedgerEntry = await ledgerModel.create([{
+    account: fromUserAccount._id,
+    amount: amount,
+    transaction: transaction._id,
+    type: "DEBIT"
+}],{ session })
+
+const creditLedgerEntry = await ledgerModel.create([{
+    account: toAccount,
+    amount: amount,
+    transaction: transaction._id,
+    type: "CREDIT"
+}],{ session })
+```
+
+**Why this matters:** Remember, balance = `SUM(credits) - SUM(debits)` for a given account (see `getBalance()`). Right now, both the DEBIT and CREDIT ledger entries are written against `fromUserAccount._id` (the system account) — so the system account's balance nets to `+amount - amount = 0` change, and `toAccount` (the account that's supposed to receive the funds) gets **nothing at all**. The whole point of this endpoint — giving a user starting balance — currently doesn't work.

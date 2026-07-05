@@ -123,7 +123,8 @@ async function createTransaction(req, res) {
             type: "CREDIT"
         }], { session })
 
-        await transactionModel.findOneAndUpdate({ _id: transaction._id }, { status: "COMPLETED" }, { session })
+        transaction.status = "COMPLETED"
+        await transaction.save({ session })
 
         await session.commitTransaction()
         session.endSession()
@@ -196,7 +197,7 @@ async function createInitialFundsTransaction(req, res) {
     }], { session })
 
     const creditLedgerEntry = await ledgerModel.create([{
-        account: fromUserAccount._id,
+        account: toAccount,
         amount: amount,
         transaction: transaction._id,
         type: "CREDIT"

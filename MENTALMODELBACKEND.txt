@@ -1,0 +1,9 @@
+Quick mental model of your backend
+Think of it like this: Users → Accounts → Transactions → Ledger entries
+
+User = a person who registers/logs in (has email, password, name)
+Account = a "wallet" belonging to a user (a user could have multiple accounts, each with a balance)
+Transaction = a record that money moved from one account to another (PENDING → COMPLETED)
+Ledger = the actual proof of money movement — every transaction creates two ledger entries: a DEBIT (money leaving fromAccount) and a CREDIT (money entering toAccount). Balance is calculated, not stored — it's SUM(credits) - SUM(debits) for that account (see getBalance() in account.model.js).
+
+This DEBIT/CREDIT pattern is called double-entry bookkeeping — it's how real banks track money, so nothing is ever just "edited," only added as new entries. That's also why ledger.model.js blocks all updates/deletes (preventLedgerModification) — ledger history must be permanent and tamper-proof.

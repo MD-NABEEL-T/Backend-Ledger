@@ -1,0 +1,91 @@
+AFTER DELETING 5 Collections inside backend-ledger db
+TEST 1: post 201
+test@example.com registers using name,email,pass gets token, mail sent to him
+
+TEST 2: post 200
+test@example.com logs in using email,pass gets token,
+
+Test 3: post 201
+Create an account for this user
+POST http://localhost:3000/api/accounts/
+copy the id :6a49f1cd815ff5e15b0fe87a
+
+Test 4: get 
+check balance
+http://localhost:3000/api/accounts/6a49f1cd815ff5e15b0fe87a/balance
+account id comes and balance is 0 for now
+
+TEST 5: post 201
+test2@example.com registers using name,email,pass gets token, mail sent to him
+
+TEST 6: post 200
+test2@example.com logs in using email,pass gets token,
+
+Test 7: post 201
+Create an account for this user
+POST http://localhost:3000/api/accounts/
+copy the id :6a49f675815ff5e15b0fe87c
+
+Test 8: get 
+check balance
+http://localhost:3000/api/accounts/6a49f675815ff5e15b0fe87c/balance
+account id comes and balance is 0 for now
+
+
+before this change the test@example.com email as system user : true in compass
+TEST 9:
+login using user1
+
+TEST 10:
+system initial funds to user1 account
+POST http://localhost:3000/api/transactions/system/initial-funds
+{
+  "toAccount": "6a49f675815ff5e15b0fe87c",
+  "amount": 500,
+  "idempotencyKey": "init-funds-001"
+}
+
+TEST 11:
+run login of user 2
+check balance of user 2 account
+it is 500 now
+
+run login of user 1
+check balance of user 1 account
+it is -500 now
+
+TEST 12:
+login as user2
+
+TEST 13: post http://localhost:3000/api/transactions/
+send money to user1
+{
+  "fromAccount": "6a49f675815ff5e15b0fe87c",
+  "toAccount": "6a49f1cd815ff5e15b0fe87a",
+  "amount": 100,
+  "idempotencyKey": "transfer-001"
+}
+
+TEST 13: *imp feature
+now ran the same command but since same idempotency key same the db marks this same transaction is triggered again
+
+TEST 14:
+changed the 
+{
+  "fromAccount": "6a49f675815ff5e15b0fe87c",
+  "toAccount": "6a49f1cd815ff5e15b0fe87a",
+  "amount": 100,
+  "idempotencyKey": "transfer-002"
+}
+now db updates
+
+TEST 15: 400 bad request 
+now same change amount to 1000 ,idempotencyKey: "transfer-003"
+current balance is 300 
+this is what we wanted 
+
+clarity
+📒 Note: Insufficient balance check
+/api/transactions/ (normal transfer) → always checks balance before allowing transfer, for anyone (regardless of user role)
+/api/transactions/system/initial-funds → separate endpoint, no balance check at all — it's meant to inject new money into the system, like a bank creating funds
+Rule: it's not "system user bypasses the check" — it's "system user has access to a different endpoint that was never built with a check"
