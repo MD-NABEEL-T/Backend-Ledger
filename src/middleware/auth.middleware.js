@@ -1,6 +1,6 @@
 const userModel = require("../models/user.model")
 const jwt = require("jsonwebtoken")
-const tokenBlacklistModel = require("../models/blacklist.model")
+const tokenBlacklistModel = require("../models/blackList.model")
 
 
 async function authMiddleware(req, res, next) {
