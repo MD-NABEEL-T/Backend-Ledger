@@ -1,3 +1,5 @@
-Deploy in server.js
-add link 
-modify the readme.md
+understood how api works next 
+understand code deeply and then
+Deploy in render server.js
+add link here 
+modify the readme.md 

@@ -1,7 +1,7 @@
 const userModel = require("../models/user.model")
 const jwt = require("jsonwebtoken")
 const emailService = require("../services/email.service")
-const tokenBlacklistModel = require("../models/blacklist.model")
+const tokenBlacklistModel = require("../models/blackList.model")
 // POST /api/auth/register
 async function userRegisterController(req, res) {
     const { email, password, name } = req.body
