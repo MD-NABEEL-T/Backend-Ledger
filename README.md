@@ -10,11 +10,17 @@ Every rupee is tracked as a **DEBIT** and a **CREDIT** — never as a single mut
 [![Auth](https://img.shields.io/badge/Auth-JWT%20%2B%20Cookies-000000?logo=jsonwebtokens&logoColor=white)](#)
 [![Deployed](https://img.shields.io/badge/Deployed-Render-46E3B7?logo=render&logoColor=white)](#)
 
-[Core Concept](#-core-concept) • [Features](#-features) • [API Reference](#-api-reference) • [Transfer Flow](#-the-transfer-flow-10-steps) • [Setup](#-getting-started)
+[Core Concept](#-core-concept) • [Features](#-features) • [API Reference](#-api-reference) • [Transfer Flow](#-the-transfer-flow-10-steps)
 
 </div>
 
 ---
+
+## 🚀 Live
+
+**API:** [backend-ledger-xch2.onrender.com](https://backend-ledger-xch2.onrender.com/)
+
+*(Free-tier Render instance — may take ~30s to spin up on the first request after inactivity.)*
 
 ## 📖 About
 
@@ -139,48 +145,6 @@ Backend-Ledger/
 │   └── services/
 │       └── email.service.js      # Nodemailer — registration + transfer emails
 ```
-
-## ⚙️ Getting Started
-
-### Prerequisites
-- Node.js
-- A MongoDB connection string (Atlas or local)
-- SMTP/Gmail credentials for Nodemailer
-
-### 1. Clone and install
-```bash
-git clone https://github.com/MD-NABEEL-T/Backend-Ledger.git
-cd Backend-Ledger
-npm install
-```
-
-### 2. Environment variables
-Create a `.env` file in the project root:
-```env
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-CLIENT_ID=your_google_oauth_client_id
-CLIENT_SECRET=your_google_oauth_client_secret
-REFRESH_TOKEN=your_google_oauth_refresh_token
-EMAIL_USER=your_sending_email_address
-PORT=3000
-```
-
-### 3. Run it
-```bash
-npm run dev     # nodemon, for local development
-npm start        # production
-```
-
-### 4. Try the flow (matches the actual test sequence used during development)
-1. `POST /api/auth/register` — create user 1
-2. `POST /api/accounts/` — create an account for user 1
-3. `POST /api/auth/register` — create user 2, then an account for them too
-4. Mark one user as `systemUser: true` directly in the database
-5. Login as the system user → `POST /api/transactions/system/initial-funds` to fund an account
-6. Login as a regular user → `POST /api/transactions/` to transfer funds, using a unique `idempotencyKey` each time
-7. Replay the same `idempotencyKey` → confirm it returns the original result instead of double-processing
-8. `GET /api/accounts/:accountId/balance` → confirm balances reflect exactly what moved
 
 ## 🎯 What This Project Demonstrates
 
