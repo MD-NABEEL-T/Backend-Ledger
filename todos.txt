@@ -1,0 +1,6 @@
+alright
+1, first we are gonna create a frontend for this backend that is our motive.
+2, our frontend should have a white and black theme 
+3, mainly there should be a how this app works like where it tells that in real time bank the ledger concept is used and all that stuff with pretty animation or some unique stuff
+
+we are making it a pwa 

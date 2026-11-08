@@ -44,6 +44,13 @@ async function createTransaction(req, res) {
         })
     }
 
+    // Verify that the authenticated user owns the source account to prevent unauthorized debits
+    if (fromUserAccount.user.toString() !== req.user._id.toString()) {
+        return res.status(403).json({
+            message: "Forbidden: You do not own the source account"
+        })
+    }
+
     // 2,validate idempotency key
     const isTransactionAlreadyExists = await transactionModel.findOne({
         idempotencyKey: idempotencyKey

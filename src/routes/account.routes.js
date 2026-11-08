@@ -17,4 +17,8 @@ router.get("/",authMiddleware.authMiddleware,accountController.getUserAccountsCo
 // GET /api/accounts/balance:accountId
 router.get("/:accountId/balance",authMiddleware.authMiddleware,accountController.getAccountBalanceController)
 
+// GET /api/accounts/:accountId/ledger
+// Get ledger entries for an account (protected route)
+router.get("/:accountId/ledger",authMiddleware.authMiddleware,accountController.getAccountLedgerController)
+
 module.exports=router
