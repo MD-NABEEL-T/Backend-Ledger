@@ -8,22 +8,13 @@ const transactionRouter=require("./routes/transaction.routes")
 
 const app=express();
 
-// Allow frontend dev server, custom CLIENT_URL, and Vercel deployments to communicate with API
-const allowedOrigins = [
-    "http://localhost:5173",
-    process.env.CLIENT_URL,
-].filter(Boolean);
-
+// Allow all incoming origins (local development, custom domains, and all Vercel deployments)
 app.use(cors({
-    origin: (origin, callback) => {
-        // Allow requests with no origin (mobile apps, Postman) or matching allowed list / vercel.app
-        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['Set-Cookie']
 }));
 
 app.get("/",(req,res)=>{
